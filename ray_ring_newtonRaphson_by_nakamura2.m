@@ -83,7 +83,7 @@ for tr_count = 1:1 %送信素子の選択
         re = [x_rg(re_count) y_rg(re_count)];
         theta0 = pi+theta_rg(tr_count);%送信素子と対向した位置角
         rpnum = 1;%音線作成回数
-        r = tr;%記入する文字数を削減するため？
+        r = tr;%rayのr
         loop = 1;%なんのループ？→おそらく角度修正にむけた内挿的処理ループ
         theta1 = theta0;%保存用？
         while(1)%なんのループ？

@@ -90,8 +90,9 @@ for tr_count = 1:1 %送信素子の選択
             dtheta = pi/180/(loop+1);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
             % 音線作成
             while(1)%なんのループ？
+                % ここで2周目が開始しているニュアンス
                 x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
-                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　
+                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　デバッグ用か？
                 if rpnum>2 %後退差分スキーム
                     %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
@@ -100,20 +101,20 @@ for tr_count = 1:1 %送信素子の選択
                     dx = ds*cos(theta1);
                     dy = ds*sin(theta1);
                 end
-                ix = round(x(rpnum)/grid_size+1);
-                jy = round(y(rpnum)/grid_size+1);
-                if ix>1||ix<grid_num+1
+                ix = round(x(rpnum)/grid_size+1);%ループごとに変化している．切り上げを行っている．
+                jy = round(y(rpnum)/grid_size+1);%音線構築ループの各ステップにおける音線上の点を示すグリッド番号
+%                 if ix>1||ix<grid_num+1
                     %nx,ny : the partial difference of n
-                    nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;
-                else
-                    nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
-                end
-                if jy>1||jy<grid_num+1
-                    ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
-                else
-                    ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
-                end
-                n_nearest = n(ix,jy);
+                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
+%                 else
+%                     nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
+%                 end
+%                 if jy>1||jy<grid_num+1
+                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
+%                 else
+%                     ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
+%                 end
+                n_nearest = n(ix,jy);%どちらかが上書きされる．
                 n_inter = n_nearest;
                 detx = x(rpnum)/grid_size+1-ix;
                 dety = y(rpnum)/grid_size+1-jy;

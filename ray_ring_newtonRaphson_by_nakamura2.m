@@ -79,7 +79,7 @@ ds = grid_size/8;
 
 for tr_count = 1:1 %送信素子の選択
     tr = [x_rg(tr_count) y_rg(tr_count)];
-    for re_count = 1:10:251
+    for re_count = 31:10:251
         re = [x_rg(re_count) y_rg(re_count)];
         theta0 = pi+theta_rg(tr_count);%送信素子と対向した位置角
         rpnum = 1;%音線作成回数
@@ -90,9 +90,9 @@ for tr_count = 1:1 %送信素子の選択
             dtheta = pi/180/(loop+1);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
             % 音線作成
             while(1)%なんのループ？
-                x(rpnum) = r(1); %#ok<SAGROW>
-                y(rpnum) = r(2); %#ok<SAGROW>
-                if rpnum>2
+                x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
+                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　
+                if rpnum>2 %後退差分スキーム
                     %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);

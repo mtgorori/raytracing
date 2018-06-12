@@ -90,7 +90,6 @@ for tr_count = 1:1 %送信素子の選択
             dtheta = pi/180/(loop+1);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
             % 音線作成
             while(1)%なんのループ？
-%                 dtheta = pi/180/(loop+1);%これは要らない？
                 x(rpnum) = r(1); %#ok<SAGROW>
                 y(rpnum) = r(2); %#ok<SAGROW>
                 if rpnum>2

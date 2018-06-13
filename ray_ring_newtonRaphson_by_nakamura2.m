@@ -82,8 +82,8 @@ for tr_count = 1:1 %送信素子の選択
             % 音線作成
             while(1)%音線作成ループ
                 % ここで2周目が開始しているニュアンス
-                x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
-                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　デバッグ用か？
+                x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標
+                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標
                 if rpnum>1 %後退差分スキーム
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);%dx,dy : the change of x and y
@@ -108,9 +108,13 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
-                ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
-                n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
+                    if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
+                        lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
+                        ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
+                        n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                    end
+                end
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;
@@ -127,12 +131,12 @@ for tr_count = 1:1 %送信素子の選択
             %音線作成終了
             %推定した音線の長さを計算する
             rdis1 = re_distance;
-            if rdis1<2.e-4
+            if rdis1<10.e-4
                 figure;
                 imagesc(lx,lx,n');hold on
                 caxis([0.9 1.1]);set(gca,'Ydir','Normal')
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')
-                plot(x(1:rpnum),y(1:rpnum),'k')
+                plot(x,y,'k')
                 plot(x_rg,y_rg,'k')
                 pause(2);%[2018-06-10 追記：竹内]
                 close;
@@ -195,6 +199,7 @@ for tr_count = 1:1 %送信素子の選択
             z(loop) = theta1;
             u(loop) = rdis1;
             loop = loop+1;
+            clear x y
         end
     end
 end

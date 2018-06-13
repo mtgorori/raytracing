@@ -73,7 +73,7 @@ n(2:grid_num-1,2:grid_num-1) = n2(2:grid_num-1,2:grid_num-1);%パディング処理をし
 ch = 256;
 % theta_rg = linspace(0,2*pi,ch);%重複する箇所が出るのでは？[2018-06-10 追記：竹内]
 %[2018-06-10-修正 竹内]
-theta_rg = linspace(0, ((ch-1)/ch)*2*pi, ch);%センサ位置角
+theta_rg = linspace(0, 2*pi, ch);%センサ位置角
 r_rg = 100.e-3/2;%リングトランスデューサ半径
 x_rg = r_rg*cos(theta_rg)+L/2;
 y_rg = r_rg*sin(theta_rg)+L/2;
@@ -109,9 +109,14 @@ for tr_count = 1:1 %送信素子の選択
                 end
                 ix = round(x(rpnum)/grid_size+1);%ループごとに変化している．切り上げを行っている．
                 jy = round(y(rpnum)/grid_size+1);%音線構築ループの各ステップにおける音線上の点を示すグリッド番号
-                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
-                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;%nx,ny : the partial difference of n
+               
+                    nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
+
+          
+                    ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;%nx,ny : the partial difference of n
+
                 n_nearest = n(ix,jy);%上書きされる．
+                n_inter = n_nearest;
                 detx = x(rpnum)/grid_size+1-ix;
                 dety = y(rpnum)/grid_size+1-jy;
                 if detx>=0
@@ -124,9 +129,13 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
-                ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
-                n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
+                    if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
+                        lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
+                        ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
+                        n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                    end
+                end
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;
@@ -142,6 +151,8 @@ for tr_count = 1:1 %送信素子の選択
             end
             %音線作成終了
             %推定した音線の長さを計算する
+            r = tr;
+            rpnum = 1;
             rdis1 = re_distance;
             if rdis1<2.e-4
                 imagesc(lx,lx,n');hold on
@@ -149,7 +160,7 @@ for tr_count = 1:1 %送信素子の選択
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')
                 plot(x,y,'k')
                 plot(x_rg,y_rg,'k')
-                pause(2);%[2018-06-10 追記：竹内]
+                pause(1);%[2018-06-10 追記：竹内]
                 %                 filename = ['Image',int2str(re_count)];
                 %                 saveas(figure(re_count),filename,'bmp')
                 A = ['x_traced',int2str(re_count),'=x;'];
@@ -158,12 +169,12 @@ for tr_count = 1:1 %送信素子の選択
                 eval(B);
                 break
             end
-%             clear x y
+            clear x y
             theta2 = theta1+dtheta;
             while(1)
                 x(rpnum) = r(1);
                 y(rpnum) = r(2);
-                if rpnum>1
+                if rpnum>2
                     %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);
@@ -173,8 +184,18 @@ for tr_count = 1:1 %送信素子の選択
                 end
                 ix = round(x(rpnum)/grid_size+1);
                 jy = round(y(rpnum)/grid_size+1);
-                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%nx,ny : the partial difference of n
-                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
+                if ix>1||ix<grid_num+1
+                    nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
+                else
+                    nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
+                end
+                if jy>1||jy<grid_num+1
+                    ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;%nx,ny : the partial difference of n
+                else
+                    ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
+                end
+                n_nearest = n(ix,jy);
+                n_inter = n_nearest;
                 detx = x(rpnum)/grid_size+1-ix;
                 dety = y(rpnum)/grid_size+1-jy;
                 if detx>=0
@@ -187,9 +208,13 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
-                ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
-                n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
+                    if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
+                        lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
+                        ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
+                        n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                    end
+                end
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;

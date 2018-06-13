@@ -5,7 +5,7 @@ close all
 grid_num = 1024;
 
 %水領域
-rwat = 100.e-3/2;%リングトランスデューサ半径と一致
+rwat = 100.e-3/2;%[m]リングトランスデューサ半径と一致
 
 %組織領域[2018-06-10 追記：竹内]
 rtis = 70.e-3/2;
@@ -99,7 +99,7 @@ for tr_count = 1:1 %送信素子の選択
                 x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
                 y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　デバッグ用か？
                 if rpnum>1 %後退差分スキーム
-                    %dx,dy : the change of x and y
+%                     dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);
                 else
@@ -147,7 +147,7 @@ for tr_count = 1:1 %送信素子の選択
                 imagesc(lx,lx,n');hold on
                 caxis([0.9 1.1]);set(gca,'Ydir','Normal')
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')
-                plot(x,y,'k')
+                plot(x(1:rpnum),y(1:rpnum),'k')
                 plot(x_rg,y_rg,'k')
                 pause(2);%[2018-06-10 追記：竹内]
                 close;
@@ -159,7 +159,6 @@ for tr_count = 1:1 %送信素子の選択
                 eval(B);
                 break
             end
-%             clear x y
             theta2 = theta1+dtheta;
             while(1)
                 x(rpnum) = r(1);
@@ -169,7 +168,7 @@ for tr_count = 1:1 %送信素子の選択
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);
                 else
-                    dx = ds*cos(theta2);
+                    dx = ds*cos(theta2);% この処理は一回目にしか行われないのでelseに持っていくと処理が早くなる。
                     dy = ds*sin(theta2);
                 end
                 ix = round(x(rpnum)/grid_size+1);
@@ -211,7 +210,6 @@ for tr_count = 1:1 %送信素子の選択
             z(loop) = theta1;
             u(loop) = rdis1;
             loop = loop+1;
-            clear x y
         end
     end
 end

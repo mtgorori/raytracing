@@ -1,12 +1,11 @@
 clear all
 close all
 
-%音速不均一な系の設定
+%% 音速不均一な系の設定
 grid_num = 1024;
 
 %水領域
-% rwat = 100.e-3/2;%使用されていない[2018-06-10 追記：竹内]
-rwat = 100.e-3/2;
+rwat = 100.e-3/2;%リングトランスデューサ半径と一致
 
 %組織領域[2018-06-10 追記：竹内]
 rtis = 70.e-3/2;
@@ -59,16 +58,16 @@ I = us_lsn.*lsnmat+us_fat.*fatmat+us_tis.*tismat+us_wat.*watmat;
 
 n = us_wat./I;%n: distribution of n (refraction rate)
 
-%スクリーンの設定
+%% スクリーンの設定
 L = 110.e-3;
 grid_size = L/grid_num;
 lx = linspace(0+grid_size/2,L-grid_size/2,grid_num);%grid_sizeを保持するために始点・終点をずらした．結果の描写だけに用いるためずらしても計算結果に影響しない[2018-06-10 追記：竹内]
-%3x3の平均値フィルターをかけスム‐シング
+%% 3x3の平均値フィルターをかけスム‐シング
 h = ones(3,3)*1/9;
 n2 = filter2(h,n);
 n(2:grid_num-1,2:grid_num-1) = n2(2:grid_num-1,2:grid_num-1);%パディング処理をしなかったためのエラーを含まないように代入の範囲を削減[2018-06-10 追記：竹内]
 
-%送信の設定
+%% 送受信素子の配置
 ch = 256;
 % theta_rg = linspace(0,2*pi,ch);%重複する箇所が出るのでは？[2018-06-10 追記：竹内]
 %[2018-06-10-修正 竹内]
@@ -76,8 +75,11 @@ theta_rg = linspace(0, ((ch-1)/ch)*2*pi, ch);%センサ位置角
 r_rg = 100.e-3/2;%リングトランスデューサ半径
 x_rg = r_rg*cos(theta_rg)+L/2;
 y_rg = r_rg*sin(theta_rg)+L/2;
+
+%% 音線の弧長の最小単位
 ds = grid_size/8;
 
+%% 単純照射法による最速経路の推定
 for tr_count = 1:1 %送信素子の選択
     tr = [x_rg(tr_count) y_rg(tr_count)];
     for re_count = 31:10:251
@@ -129,13 +131,13 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
-                    if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
-                        lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
-                        ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
-                        n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
-                    end
-                end
+                %                 if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
+                %                     if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
+                lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
+                ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
+                n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                %                     end
+                %                 end
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;
@@ -198,7 +200,7 @@ for tr_count = 1:1 %送信素子の選択
                 %                     ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
                 %                 end
                 n_nearest = n(ix,jy);
-%                 n_inter = n_nearest;
+                %                 n_inter = n_nearest;
                 detx = x(rpnum)/grid_size+1-ix;
                 dety = y(rpnum)/grid_size+1-jy;
                 if detx>=0
@@ -243,14 +245,14 @@ for tr_count = 1:1 %送信素子の選択
     end
 end
 
-figure;imagesc(lx,lx,n');hold on
-caxis([0.9 1.1]);set(gca,'Ydir','Normal')
-plot(tr(1),tr(2),'*')
-plot(re(1),re(2),'+')
-for re_count = 1:ch
-    C = ['x = x_traced',int2str(re_count),';'];
-    D = ['y = y_traced',int2str(re_count),';'];
-    eval(C);
-    eval(D);
-    plot(x,y,'r')
-end
+% figure;imagesc(lx,lx,n');hold on
+% caxis([0.9 1.1]);set(gca,'Ydir','Normal')
+% plot(tr(1),tr(2),'*')
+% plot(re(1),re(2),'+')
+% for re_count = 1:ch
+%     C = ['x = x_traced',int2str(re_count),';'];
+%     D = ['y = y_traced',int2str(re_count),';'];
+%     eval(C);
+%     eval(D);
+%     plot(x,y,'r')
+% end

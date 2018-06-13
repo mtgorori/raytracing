@@ -138,7 +138,7 @@ for tr_count = 1:1
             r = tr;
             rpnum = 1;
             rdis1 = re_distance;
-            if rdis1<15.e-4
+            if rdis1<2.e-4
                 imagesc(lx,lx,n');hold on
                 caxis([0.9 1.1]);set(gca,'Ydir','Normal')
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')

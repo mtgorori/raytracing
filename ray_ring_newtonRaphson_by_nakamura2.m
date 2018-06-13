@@ -3,25 +3,20 @@ close all
 
 %% 音速不均一な系の設定
 grid_num = 1024;
-
 %水領域
 rwat = 100.e-3/2;%[m]リングトランスデューサ半径と一致
-
 %組織領域[2018-06-10 追記：竹内]
 rtis = 70.e-3/2;
 xtis = 110.e-3/2;
 ytis = 110.e-3/2;
-
 %脂肪領域[2018-06-10 追記：竹内]
 rfat = 20.e-3/2;
 xfat = 110.e-3/2 + 20.e-3;
 yfat = 110.e-3/2;
-
 %腫瘤領域[2018-06-10 追記：竹内]
 rlsn = 20.e-3/2;
 xlsn = 110.e-3/2 - 20.e-3;
 ylsn = 110.e-3/2;
-
 %領域サイズの決定
 xmax = 110.e-3;
 ymax = 110.e-3;
@@ -32,13 +27,11 @@ ymax = 110.e-3;
 %　 |　　　　　　　　　＝　　　|
 %　 |　　　　　　　　 　 　　　↓
 % 　-------------→x　　　　　　列
-
 %このような関係が成り立ち，マトリクスをimagescしたときに１のように見え，直観的．[2018-06-10 追記：竹内]
 x1 = linspace(0,xmax,grid_num);
 xx = repmat(x1,grid_num,1);
 y1 = linspace(ymax,0,grid_num);
 yy = repmat(y1',1,grid_num);
-
 R1 = (xx-xlsn).^2+(yy-ylsn).^2;
 lsnmat = (R1<rlsn^2);%腫瘤領域をlogical型で表現[2018-06-10 追記：竹内]
 R2 = (xx-xfat).^2+(yy-yfat).^2;
@@ -48,16 +41,12 @@ w1 = (R3<rtis^2);
 w02 = w1-fatmat;%組織が存在しうる領域から脂肪領域を取り除いた領域：2[2018-06-10 追記：竹内]
 w01 = w1-lsnmat;%組織が存在しうる領域から腫瘤領域を取り除いた領域：１[2018-06-10 追記：竹内]
 tismat = w01.*w02;%１でありかつ２である領域：真の組織領域[2018-06-10 追記：竹内]
-
 watmat = (R3>(rtis)^2);
-
 us_wat = 1540;
 us_lsn = 1550;
 us_tis = 1540;
 us_fat = 1530;
-
 I = us_lsn.*lsnmat+us_fat.*fatmat+us_tis.*tismat+us_wat.*watmat;
-
 n = us_wat./I;%n: distribution of n (refraction rate)
 
 %% スクリーンの設定
@@ -68,7 +57,6 @@ lx = linspace(0+grid_size/2,L-grid_size/2,grid_num);%grid_sizeを保持するために始
 h = ones(3,3)*1/9;
 n2 = filter2(h,n);
 n(2:grid_num-1,2:grid_num-1) = n2(2:grid_num-1,2:grid_num-1);%パディング処理をしなかったためのエラーを含まないように代入の範囲を削減[2018-06-10 追記：竹内]
-
 %% 送受信素子の配置
 ch = 256;
 % theta_rg = linspace(0,2*pi,ch);%重複する箇所が出るのでは？[2018-06-10 追記：竹内]
@@ -77,10 +65,8 @@ theta_rg = linspace(0, ((ch-1)/ch)*2*pi, ch);%センサ位置角
 r_rg = 100.e-3/2;%リングトランスデューサ半径
 x_rg = r_rg*cos(theta_rg)+L/2;
 y_rg = r_rg*sin(theta_rg)+L/2;
-
 %% 音線の弧長の最小単位
 ds = grid_size/8;
-
 %% 単純照射法による最速経路の推定
 for tr_count = 1:1 %送信素子の選択
     tr = [x_rg(tr_count) y_rg(tr_count)];
@@ -91,17 +77,16 @@ for tr_count = 1:1 %送信素子の選択
         r = tr;%rayのr
         loop = 1;%なんのループ？→おそらく角度修正にむけた内挿的処理ループ
         theta1 = theta0;%保存用？
-        while(1)%なんのループ？
+        while(1)%何を何に変える？
             dtheta = pi/180/(loop+1);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
             % 音線作成
-            while(1)%なんのループ？
+            while(1)%何を何に変える？
                 % ここで2周目が開始しているニュアンス
                 x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
                 y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　デバッグ用か？
                 if rpnum>1 %後退差分スキーム
-%                     dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
-                    dy = y(rpnum)-y(rpnum-1);
+                    dy = y(rpnum)-y(rpnum-1);%dx,dy : the change of x and y
                 else
                     dx = ds*cos(theta1);
                     dy = ds*sin(theta1);

@@ -66,7 +66,7 @@ ds = grid_size/8;
 for tr_count = 1:1
     tr = [x_rg(tr_count) y_rg(tr_count)];
     figure;
-    for re_count = 1:ch
+    for re_count = 1:10:ch
         re = [x_rg(re_count) y_rg(re_count)];
         theta0 = pi+theta_rg(tr_count);
         rpnum = 1;
@@ -138,11 +138,13 @@ for tr_count = 1:1
             r = tr;
             rpnum = 1;
             rdis1 = re_distance;
-            if rdis1<2.e-4
+            if rdis1<15.e-4
                 imagesc(lx,lx,n');hold on
                 caxis([0.9 1.1]);set(gca,'Ydir','Normal')
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')
                 plot(x,y,'k')
+                plot(x_rg,y_rg,'k')
+                pause(1);
 %                 filename = ['Image',int2str(re_count)];
 %                 saveas(figure(re_count),filename,'bmp')
                 A = ['x_traced',int2str(re_count),'=x;'];

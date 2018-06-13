@@ -73,7 +73,7 @@ n(2:grid_num-1,2:grid_num-1) = n2(2:grid_num-1,2:grid_num-1);%パディング処理をし
 ch = 256;
 % theta_rg = linspace(0,2*pi,ch);%重複する箇所が出るのでは？[2018-06-10 追記：竹内]
 %[2018-06-10-修正 竹内]
-theta_rg = linspace(0, 2*pi*(ch-1)/ch, ch);%センサ位置角
+theta_rg = linspace(0, ((ch-1)/ch)*2*pi, ch);%センサ位置角
 r_rg = 100.e-3/2;%リングトランスデューサ半径
 x_rg = r_rg*cos(theta_rg)+L/2;
 y_rg = r_rg*sin(theta_rg)+L/2;
@@ -124,11 +124,9 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                
                 lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
                 ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
                 n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
-                
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;
@@ -162,12 +160,12 @@ for tr_count = 1:1 %送信素子の選択
                 eval(B);
                 break
             end
-            clear x y
+%             clear x y
             theta2 = theta1+dtheta;
             while(1)
                 x(rpnum) = r(1);
                 y(rpnum) = r(2);
-                if rpnum>2
+                if rpnum>1
                     %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);
@@ -177,9 +175,9 @@ for tr_count = 1:1 %送信素子の選択
                 end
                 ix = round(x(rpnum)/grid_size+1);
                 jy = round(y(rpnum)/grid_size+1);
-                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
-                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;%nx,ny : the partial difference of n
-                n_nearest = n(ix,jy);
+                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%nx,ny : the partial difference of n
+                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
+                n_nearest = n(ix,jy); 
                 detx = x(rpnum)/grid_size+1-ix;
                 dety = y(rpnum)/grid_size+1-jy;
                 if detx>=0

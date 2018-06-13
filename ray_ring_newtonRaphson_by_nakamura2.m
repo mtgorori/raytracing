@@ -5,7 +5,8 @@ close all
 grid_num = 1024;
 
 %水領域
-rwat = 100.e-3/2;%使用されていない[2018-06-10 追記：竹内]
+% rwat = 100.e-3/2;%使用されていない[2018-06-10 追記：竹内]
+rwat = 100.e-3/2;
 
 %組織領域[2018-06-10 追記：竹内]
 rtis = 70.e-3/2;
@@ -28,7 +29,7 @@ ymax = 110.e-3;
 % １：y　　　　　　　　２：　　----------→行
 %　↑　　　　　　　　　　　　　|
 %　 |　　　　　　　　　　　　　|
-%　 |　　　　　　　　　＝　　　|　
+%　 |　　　　　　　　　＝　　　|
 %　 |　　　　　　　　 　 　　　↓
 % 　-------------→x　　　　　　列
 %このような関係が成り立ち，マトリクスをimagescしたときに１のように見え，直観的．[2018-06-10 追記：竹内]
@@ -103,17 +104,17 @@ for tr_count = 1:1 %送信素子の選択
                 end
                 ix = round(x(rpnum)/grid_size+1);%ループごとに変化している．切り上げを行っている．
                 jy = round(y(rpnum)/grid_size+1);%音線構築ループの各ステップにおける音線上の点を示すグリッド番号
-%                 if ix>1||ix<grid_num+1
+                if ix>1&&ix<grid_num+1
                     %nx,ny : the partial difference of n
-                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
-%                 else
-%                     nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
-%                 end
-%                 if jy>1||jy<grid_num+1
-                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
-%                 else
-%                     ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
-%                 end
+                    nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;%音線をストップするトリガーは他にあるはず．コメントアウト
+                else
+                    nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
+                end
+                if jy>1&&jy<grid_num+1
+                    ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
+                else
+                    ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
+                end
                 n_nearest = n(ix,jy);%どちらかが上書きされる．
                 n_inter = n_nearest;
                 detx = x(rpnum)/grid_size+1-ix;
@@ -159,10 +160,11 @@ for tr_count = 1:1 %送信素子の選択
                 caxis([0.9 1.1]);set(gca,'Ydir','Normal')
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')
                 plot(x,y,'k')
+                plot(x_rg,y_rg,'k')
                 pause(2);%[2018-06-10 追記：竹内]
                 close;
-%                 filename = ['Image',int2str(re_count)];
-%                 saveas(figure(re_count),filename,'bmp')
+                %                 filename = ['Image',int2str(re_count)];
+                %                 saveas(figure(re_count),filename,'bmp')
                 A = ['x_traced',int2str(re_count),'=x;'];
                 B = ['y_traced',int2str(re_count),'=y;'];
                 eval(A);
@@ -184,19 +186,19 @@ for tr_count = 1:1 %送信素子の選択
                 end
                 ix = round(x(rpnum)/grid_size+1);
                 jy = round(y(rpnum)/grid_size+1);
-                if ix>1||ix<grid_num+1
-                    %nx,ny : the partial difference of n
-                    nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;
-                else
-                    nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
-                end
-                if jy>1||jy<grid_num+1
-                    ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
-                else
-                    ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
-                end
+                %                 if ix>1&&ix<grid_num+1
+                %nx,ny : the partial difference of n
+                nx = (n(ix+1,jy)-n(ix-1,jy))/2/grid_size;
+                %                 else
+                %                     nx = (n(ix+1,jy)-n(ix+1,jy))/2/grid_size;
+                %                 end
+                %                 if jy>1&&jy<grid_num+1
+                ny = (n(ix,jy+1)-n(ix,jy-1))/2/grid_size;
+                %                 else
+                %                     ny = (n(ix,jy+1)-n(ix,jy+1))/2/grid_size;
+                %                 end
                 n_nearest = n(ix,jy);
-                n_inter = n_nearest;
+%                 n_inter = n_nearest;
                 detx = x(rpnum)/grid_size+1-ix;
                 dety = y(rpnum)/grid_size+1-jy;
                 if detx>=0
@@ -209,13 +211,13 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
-                    if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
-                        lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
-                        ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
-                        n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
-                    end
-                end
+                %                 if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
+                %                     if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
+                lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
+                ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
+                n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
+                %                     end
+                %                 end
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;
@@ -228,7 +230,7 @@ for tr_count = 1:1 %送信素子の選択
                     break
                 end
                 rpnum = rpnum+1;
-            end   
+            end
             rdis2 = re_distance;
             theta1 = theta1-rdis1*dtheta/(rdis2-rdis1);
             r = tr;

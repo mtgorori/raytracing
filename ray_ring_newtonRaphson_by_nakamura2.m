@@ -3,20 +3,25 @@ close all
 
 %% 音速不均一な系の設定
 grid_num = 1024;
+
 %水領域
-rwat = 100.e-3/2;%[m]リングトランスデューサ半径と一致
+rwat = 100.e-3/2;%リングトランスデューサ半径と一致
+
 %組織領域[2018-06-10 追記：竹内]
 rtis = 70.e-3/2;
 xtis = 110.e-3/2;
 ytis = 110.e-3/2;
+
 %脂肪領域[2018-06-10 追記：竹内]
 rfat = 20.e-3/2;
 xfat = 110.e-3/2 + 20.e-3;
 yfat = 110.e-3/2;
+
 %腫瘤領域[2018-06-10 追記：竹内]
 rlsn = 20.e-3/2;
 xlsn = 110.e-3/2 - 20.e-3;
 ylsn = 110.e-3/2;
+
 %領域サイズの決定
 xmax = 110.e-3;
 ymax = 110.e-3;
@@ -27,11 +32,13 @@ ymax = 110.e-3;
 %　 |　　　　　　　　　＝　　　|
 %　 |　　　　　　　　 　 　　　↓
 % 　-------------→x　　　　　　列
+
 %このような関係が成り立ち，マトリクスをimagescしたときに１のように見え，直観的．[2018-06-10 追記：竹内]
 x1 = linspace(0,xmax,grid_num);
 xx = repmat(x1,grid_num,1);
 y1 = linspace(ymax,0,grid_num);
 yy = repmat(y1',1,grid_num);
+
 R1 = (xx-xlsn).^2+(yy-ylsn).^2;
 lsnmat = (R1<rlsn^2);%腫瘤領域をlogical型で表現[2018-06-10 追記：竹内]
 R2 = (xx-xfat).^2+(yy-yfat).^2;
@@ -41,12 +48,16 @@ w1 = (R3<rtis^2);
 w02 = w1-fatmat;%組織が存在しうる領域から脂肪領域を取り除いた領域：2[2018-06-10 追記：竹内]
 w01 = w1-lsnmat;%組織が存在しうる領域から腫瘤領域を取り除いた領域：１[2018-06-10 追記：竹内]
 tismat = w01.*w02;%１でありかつ２である領域：真の組織領域[2018-06-10 追記：竹内]
+
 watmat = (R3>(rtis)^2);
+
 us_wat = 1540;
 us_lsn = 1550;
 us_tis = 1540;
 us_fat = 1530;
+
 I = us_lsn.*lsnmat+us_fat.*fatmat+us_tis.*tismat+us_wat.*watmat;
+
 n = us_wat./I;%n: distribution of n (refraction rate)
 
 %% スクリーンの設定
@@ -57,6 +68,7 @@ lx = linspace(0+grid_size/2,L-grid_size/2,grid_num);%grid_sizeを保持するために始
 h = ones(3,3)*1/9;
 n2 = filter2(h,n);
 n(2:grid_num-1,2:grid_num-1) = n2(2:grid_num-1,2:grid_num-1);%パディング処理をしなかったためのエラーを含まないように代入の範囲を削減[2018-06-10 追記：竹内]
+
 %% 送受信素子の配置
 ch = 256;
 % theta_rg = linspace(0,2*pi,ch);%重複する箇所が出るのでは？[2018-06-10 追記：竹内]
@@ -65,28 +77,32 @@ theta_rg = linspace(0, ((ch-1)/ch)*2*pi, ch);%センサ位置角
 r_rg = 100.e-3/2;%リングトランスデューサ半径
 x_rg = r_rg*cos(theta_rg)+L/2;
 y_rg = r_rg*sin(theta_rg)+L/2;
+
 %% 音線の弧長の最小単位
 ds = grid_size/8;
+
 %% 単純照射法による最速経路の推定
 for tr_count = 1:1 %送信素子の選択
     tr = [x_rg(tr_count) y_rg(tr_count)];
-    for re_count = 31:10:251
+    figure;
+    for re_count = 1:10:ch
         re = [x_rg(re_count) y_rg(re_count)];
         theta0 = pi+theta_rg(tr_count);%送信素子と対向した位置角
-        rpnum = 1;%音線先頭点更新用変数
-        r = tr;%rayのr [r(rpnum)]
-        loop = 1;%角度修正にむけた内挿的処理ループ
+        rpnum = 1;%音線作成回数
+        r = tr;%rayのr
+        loop = 1;%なんのループ？→おそらく角度修正にむけた内挿的処理ループ
         theta1 = theta0;%保存用？
-        while(1)%探索角度の細分化ループ
+        while(1)%なんのループ？
             dtheta = pi/180/(loop+1);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
             % 音線作成
-            while(1)%音線作成ループ
+            while(1)%なんのループ？
                 % ここで2周目が開始しているニュアンス
-                x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標
-                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標
+                x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
+                y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　デバッグ用か？
                 if rpnum>1 %後退差分スキーム
+                    %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
-                    dy = y(rpnum)-y(rpnum-1);%dx,dy : the change of x and y
+                    dy = y(rpnum)-y(rpnum-1);
                 else
                     dx = ds*cos(theta1);
                     dy = ds*sin(theta1);
@@ -108,13 +124,9 @@ for tr_count = 1:1 %送信素子の選択
                 else
                     jy2 = round(y(rpnum)/grid_size+1-0.5);
                 end
-                if ix2>0&&ix>0&&ix2<grid_num+1&&ix<grid_num+1
-                    if jy>0&&jy2>0&&jy<grid_num+1&&jy2<grid_num+1
-                        lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
-                        ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
-                        n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
-                    end
-                end
+                lx1 = abs(x(rpnum)/grid_size+1-ix);lx2 = abs(x(rpnum)/grid_size+1-ix2);
+                ly1 = abs(y(rpnum)/grid_size+1-jy);ly2 = abs(y(rpnum)/grid_size+1-jy2);
+                n_inter = n(ix,jy)*lx2*ly2+n(ix2,jy)*lx1*ly2+n(ix,jy2)*lx2*ly1+n(ix2,jy2)*lx1*ly1;
                 DS = sqrt((dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)^2+(dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)^2);
                 dsx = (dx+1/2/n_inter*(nx-(nx*dx/ds)*dx/ds)*grid_size^2)/DS*ds;
                 dsy = (dy+1/2/n_inter*(ny-(ny*dy/ds)*dy/ds)*grid_size^2)/DS*ds;
@@ -131,15 +143,13 @@ for tr_count = 1:1 %送信素子の選択
             %音線作成終了
             %推定した音線の長さを計算する
             rdis1 = re_distance;
-            if rdis1<10.e-4
-                figure;
+            if rdis1<2.e-4
                 imagesc(lx,lx,n');hold on
                 caxis([0.9 1.1]);set(gca,'Ydir','Normal')
                 plot(tr(1),tr(2),'*');plot(re(1),re(2),'+')
                 plot(x,y,'k')
                 plot(x_rg,y_rg,'k')
                 pause(2);%[2018-06-10 追記：竹内]
-                close;
                 %                 filename = ['Image',int2str(re_count)];
                 %                 saveas(figure(re_count),filename,'bmp')
                 A = ['x_traced',int2str(re_count),'=x;'];
@@ -148,6 +158,7 @@ for tr_count = 1:1 %送信素子の選択
                 eval(B);
                 break
             end
+%             clear x y
             theta2 = theta1+dtheta;
             while(1)
                 x(rpnum) = r(1);
@@ -157,7 +168,7 @@ for tr_count = 1:1 %送信素子の選択
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);
                 else
-                    dx = ds*cos(theta2);% この処理は一回目にしか行われないのでelseに持っていくと処理が早くなる。
+                    dx = ds*cos(theta2);
                     dy = ds*sin(theta2);
                 end
                 ix = round(x(rpnum)/grid_size+1);

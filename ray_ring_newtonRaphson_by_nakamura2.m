@@ -98,7 +98,7 @@ for tr_count = 1:1 %送信素子の選択
                 % ここで2周目が開始しているニュアンス
                 x(rpnum) = r(1); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｘ座標　このループ内で変化している．
                 y(rpnum) = r(2); %#ok<SAGROW> 繰り返しごとにサイズ可変:送信素子のｙ座標　デバッグ用か？
-                if rpnum>2 %後退差分スキーム
+                if rpnum>1 %後退差分スキーム
                     %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);
@@ -141,8 +141,6 @@ for tr_count = 1:1 %送信素子の選択
             end
             %音線作成終了
             %推定した音線の長さを計算する
-            r = tr;
-            rpnum = 1;
             rdis1 = re_distance;
             if rdis1<2.e-4
                 figure;
@@ -161,12 +159,12 @@ for tr_count = 1:1 %送信素子の選択
                 eval(B);
                 break
             end
-            clear x y
+%             clear x y
             theta2 = theta1+dtheta;
             while(1)
                 x(rpnum) = r(1);
                 y(rpnum) = r(2);
-                if rpnum>2
+                if rpnum>1
                     %dx,dy : the change of x and y
                     dx = x(rpnum)-x(rpnum-1);
                     dy = y(rpnum)-y(rpnum-1);

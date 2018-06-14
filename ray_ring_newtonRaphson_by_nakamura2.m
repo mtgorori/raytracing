@@ -2,7 +2,7 @@ clear all
 close all
 
 %% 音速不均一な系の設定
-grid_num = 2048;
+grid_num = 1024;
 
 %水領域
 rwat = 100.e-3/2;%リングトランスデューサ半径と一致
@@ -93,7 +93,7 @@ for tr_count = 1:1 %送信素子の選択
         loop = 1;%なんのループ？→おそらく角度修正にむけた内挿的処理ループ
         theta1 = theta0;%保存用？
         while(1)%なんのループ？
-            dtheta = pi/180/(loop+1);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
+            dtheta = pi/180/(2*loop);%やりたいこと：最初は1ラジアンから刻み角を用意して，到達地点と受信素子との距離が十分近くなかったら走査範囲を細かくする．
             % 音線作成
             while(1)%なんのループ？
                 % ここで2周目が開始しているニュアンス
@@ -208,6 +208,8 @@ for tr_count = 1:1 %送信素子の選択
             end
             rdis2 = re_distance;
             theta1 = theta1-rdis1*dtheta/(rdis2-rdis1);
+%             alpha(loop) = (rdis2-rdis1)/abs(rdis2-rdis1);
+%             theta1 = theta1- 1.1*dtheta*alpha;
             r = tr;
             rpnum = 1;
             z(loop) = theta1;

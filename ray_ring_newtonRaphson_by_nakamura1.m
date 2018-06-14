@@ -57,7 +57,7 @@ n(2:grid_num-1,2:grid_num-1) = n2(2:grid_num-1,2:grid_num-1);
 
 %送信の設定
 ch = 256;
-theta_rg = linspace(0,2*pi,ch);
+theta_rg = linspace(0,2*pi*(ch-1)/ch,ch);
 r_rg = 100.e-3/2;%リングトランスデューサ半径
 x_rg = r_rg*cos(theta_rg)+L/2;
 y_rg = r_rg*sin(theta_rg)+L/2;
